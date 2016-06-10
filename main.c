@@ -38,6 +38,28 @@ int main(int argc, char **argv)
 	gettimeofday(&start, NULL);
 
 	/* TODO: Hier muss die Aufgabe geloest werden */
+    // solve with jacobi algorithm
+    do {
+        for(i = 0; i < MATRIX_SIZE; i++) {
+            xi = 0.0;
+            for(j = 0; j < MATRIX_SIZE; j++) {
+                if(i != j)
+                    xi = xi + A[i][j] * X_old[j];
+            }
+
+            X[i] = (b[i] - xi) / A[i][i];
+        }
+
+        norm = 0.0;
+        for(i = 0;i < MATRIX_SIZE;i++)
+        {
+            norm += (X_old[i] - X[i]) * (X_old[i] - X[i]);
+            X_old[i] = X[i];
+        }
+
+        norm = sqrt(norm);
+        iterations++;
+    } while(norm > sqrt(0.0000001 * MATRIX_SIZE));
 
 	gettimeofday(&end, NULL);
 
