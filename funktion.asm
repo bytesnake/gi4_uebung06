@@ -1,12 +1,12 @@
 SECTION .data
 	character_map db '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
 	message db "<debug> number in base %i is %s",10,0
-	num_10 dd 10
 
 SECTION .text
 	global main
 	extern malloc
-	extern printf
+	extern free
+    extern printf
 	global int_as_ascii
 	global count_num_of_occurrence
 	global write_as_ascii
@@ -18,7 +18,11 @@ main:
 	add esp, 4 ; delete variable
 
 	;; in eax is the pointer to a struct containing hex and dec representation of the number
-	
+
+    ;; delete struct
+    push eax
+    call free
+
 end:	
 	;; exit
 	mov eax, 1
@@ -42,22 +46,13 @@ int_as_ascii:
 
 	;; save start adress in stack
 	push eax
-	;; load our character map to the source register
+	
+    ;; load our character map to the source register
 	mov esi, character_map
 
 	;; load pointer of malloc to the destination register
 	mov edi, eax
-	mov eax, [ebp+8] ; load first parameter (integer)
-
-	;; as dec ascii
-	mov ebx, 10
-	call count_num_of_occurrence
-	call write_as_ascii
-	call print
-
-	;; set correct memory adress
-	pop edi
-	add edi, 9
+	mov eax, dword [ebp+8] ; load first parameter (integer)
 
 	;; as hex ascii
 	mov ebx, 16
@@ -65,17 +60,27 @@ int_as_ascii:
 	call write_as_ascii
 	call print
 
+	;; set correct memory adress
+    mov edi, dword [esp]
+	add edi, 10
+	
+    ;; as dec ascii
+	mov ebx, 10
+	call count_num_of_occurrence
+	call write_as_ascii
+	call print
+
 	;; save struct pointer to eax as return value
-	mov eax, edi
+    pop eax
 
 	;; restore stack frame and returen
-	mov esi, ebp
+	mov esp, ebp
 	pop ebp
 
 	ret
 	
 ;; count the amount of characters needed to represent number in ascii
-;; EDI points to the end of number (in ascii) and will contain a close character
+;; after: EDI points to the end of number (in ascii) and will contain a close character
 ;; save&restore eax
 
 count_num_of_occurrence:
@@ -86,8 +91,8 @@ count_num_of_occurrence:
 	
 	inc edi
 
-	test eax, eax
-	jg .L1
+	cmp eax, 0
+    jg .L1
 
 	pop eax
 
@@ -105,7 +110,7 @@ write_as_ascii:
 	xor edx, edx
 	div dword ebx
 
-	;; decrement edi and set esi to address of lookup table + remainer
+	;; decrement edi and set esi to address of lookup table + remainder
 	dec edi
 	push esi
 	add esi, edx
@@ -115,8 +120,8 @@ write_as_ascii:
 	;; restore esi
 	pop esi
 
-	test eax, eax
-	jg .L2
+	cmp eax, 0
+    jg .L2
 
 	pop eax
 
