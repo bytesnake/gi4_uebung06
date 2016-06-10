@@ -4,7 +4,7 @@ CXX = g++
 # optimzation flags
 #CFLAGS = -Wall -O3
 # flags for debugging
-CFLAGS = -Wall -O0 -g -pthread
+CFLAGS = -lm -Wall -O0 -g -pthread
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = 
 RM = rm -rf
@@ -33,6 +33,10 @@ OBJS += $(patsubst %.asm, %.o, $(filter %.asm, $(ASM_source)))
 
 default:
 	$(MAKE) $(NAME)
+
+asm:
+	nasm -f elf32 -g -F dwarf -l funktion.lst funktion.asm
+	gcc -g -m32 -o funktion funktion.o
 
 all:
 	$(MAKE) $(NAME)
